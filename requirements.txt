@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+pandas
+numpy
+requests
+transformers
+sentence-transformers
+faiss-cpu
+yfinance
+alpaca-trade-api
+langchain
+langgraph
