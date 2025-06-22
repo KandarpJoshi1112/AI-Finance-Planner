@@ -12,9 +12,20 @@ class BudgetingAgent:
     """
 
     def __init__(self, csv_path: str):
-        # Load and normalize
-        self.df = pd.read_csv(csv_path, parse_dates=['Date'])
+        # 1) Load CSV
+        self.df = pd.read_csv(csv_path)
+
+        # 2) Ensure 'Date' exists
+        if 'Date' not in self.df.columns:
+            raise ValueError("CSV must include a 'Date' column")
+
+        # 3) Parse 'Date' into datetime, drop unparseable rows
+        self.df['Date'] = pd.to_datetime(self.df['Date'], errors='coerce')
+        self.df = self.df.dropna(subset=['Date'])
+
+        # 4) Normalize 'Type' and compute 'Month'
         self.df['Type'] = self.df['Type'].str.capitalize()
+        # .dt accessor is now safe because 'Date' is datetime
         self.df['Month'] = self.df['Date'].dt.to_period('M')
 
     def compute_totals(self) -> Dict[str, float]:
@@ -45,6 +56,9 @@ class BudgetingAgent:
             .unstack(fill_value=0)
         )
         monthly['Savings'] = monthly.get('Credit', 0) - monthly.get('Debit', 0)
+        # Convert Period index to string for JSON serialization
+        monthly = monthly.reset_index()
+        monthly['Month'] = monthly['Month'].astype(str)
         return monthly
 
     def recommend_savings(self) -> Dict[str, Any]:
@@ -60,7 +74,6 @@ class BudgetingAgent:
         expense = totals['total_expense']
 
         pct = (top_amt / expense * 100) if expense else 0
-        # Suggest a 20% reduction in top category
         potential_saving = top_amt * 0.2
 
         suggestion = (
@@ -75,16 +88,11 @@ class BudgetingAgent:
         }
 
     def run(self) -> Dict[str, Any]:
-        # get your monthly summary DataFrame
-        monthly_df = self.monthly_summary().reset_index()
-        # convert Period or Timestamp to plain string
-        monthly_df["Month"] = monthly_df["Month"].astype(str)
-
         return {
-            "totals": self.compute_totals(),
-            "category_expenses": self.category_summary().to_dict(),
-            "monthly_summary": monthly_df.to_dict(orient="records"),
-            "recommendation": self.recommend_savings()
+            'totals': self.compute_totals(),
+            'category_expenses': self.category_summary().to_dict(),
+            'monthly_summary': self.monthly_summary().to_dict(orient='records'),
+            'recommendation': self.recommend_savings()
         }
 
 if __name__ == '__main__':

@@ -27,7 +27,8 @@ CATEGORY_RULES = {
     "google pay": "Income",
     "salary": "Income",
     "gtu": "Education",
-    "university": "Education"
+    "university": "Education",
+    "salary": "Income",
 }
 
 def categorize(description: str) -> str:
