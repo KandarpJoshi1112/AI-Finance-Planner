@@ -1,7 +1,7 @@
 import React from "react";
 import BudgetDashboard from "./components/BudgetDashboard";
 import TaxSummary from "./components/TaxSummary";
-
+import RebalancerDashboard from "./components/RebalancerDashboard";
 function App() {
   return (
     <div>
@@ -9,6 +9,7 @@ function App() {
 
       <BudgetDashboard />
       <TaxSummary />
+      <RebalancerDashboard />
     </div>
   );
 }
